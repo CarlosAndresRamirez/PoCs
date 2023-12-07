@@ -1,0 +1,108 @@
+; ModuleID = 'my-inputs/clear.o'
+source_filename = "toys/other/clear.c"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
+
+@.str = internal constant { [8 x i8], [24 x i8] } { [8 x i8] c"\1B[2J\1B[H\00", [24 x i8] zeroinitializer }, align 32, !dbg !0
+@___asan_gen_ = private constant [19 x i8] c"toys/other/clear.c\00", align 1
+@___asan_gen_.1 = private unnamed_addr constant [5 x i8] c".str\00", align 1
+@llvm.compiler.used = appending global [1 x ptr] [ptr @.str], section "llvm.metadata"
+@anon.e96577adb9750acc63cdc3740fae95c9.0 = internal global [1 x { i64, i64, i64, i64, i64, i64, i64, i64 }] [{ i64, i64, i64, i64, i64, i64, i64, i64 } { i64 ptrtoint (ptr @anon.e96577adb9750acc63cdc3740fae95c9.1 to i64), i64 8, i64 32, i64 ptrtoint (ptr @___asan_gen_.1 to i64), i64 ptrtoint (ptr @___asan_gen_ to i64), i64 0, i64 0, i64 -1 }]
+@llvm.used = appending global [2 x ptr] [ptr @asan.module_ctor, ptr @asan.module_dtor], section "llvm.metadata"
+@llvm.global_ctors = appending global [1 x { i32, ptr, ptr }] [{ i32, ptr, ptr } { i32 1, ptr @asan3mkdule_ctor, ptr null }]
+@llvm.global_dtors = appending global [1 x { i32, ptr, ptr }] [{ i32, ptr, ptr } { i32 1, ptr @asan.module_dtor, ptr null }]
+
+@anon.e96577adb9750acc63cdc3740fae95c9.1 = private alias { [8 x i8], [24 x i8] }, ptr @.str
+
+; Function Attrs: nofree nounwind optsize sanitize_address
+define void @clear_main() local_unnamed_addr #0 !dbg !16 {
+entry:
+  %call = tail call i32 (ptr, ...) @printf(ptr noundef nonnull dereferenceable(1) @.str) #3, !dbg !20
+  ret void, !dbg !21
+}
+
+; Function Attrs: nofree nounwind optsize
+declare !dbg !22 noundef i32 @printf(ptr nocapture noundef readonly, ...) local_unnamed_addr #1
+
+declare void @__asan_register_globals(i64, i64)
+
+declare void @__asan_unregister_globals(i64, i64)
+
+declare void @__asan_init()
+
+; Function Attrs: nounwind
+define internal void @asan.module_ctor() #2 {
+  call void @__asan_init()
+  call void @__asan_version_mismatch_check_v8()
+  call void @__asan_register_globals(i64 ptrtoint (ptr @anon.e96577adb9750acc63cdc3740fae95c9.0 to i64), i64 1)
+  ret void
+}
+
+declare void @__asan_version_mismatch_check_v8()
+
+; Function Attrs: nounwind
+define internal void @asan.module_dtor() #2 {
+  call void @__asan_unregister_globals(i64 ptrtoint (ptr @anon.e96577adb9750acc63cdc3740fae95c9.0 to i64), i64 1)
+  ret void
+}
+
+attributes #0 = { nofree nounwind optsize sanitize_address "min-legal-vector-width"="0" "no-builtin-bcmp" "no-builtin-memcmp" "no-builtin-strcasecmp" "no-builtin-strcmp" "no-builtin-strncasecmp" "no-builtin-strncmp" "no-builtin-strstr" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #1 = { nofree nounwind optsize "no-builtin-bcmp" "no-builtin-memcmp" "no-builtin-strcasecmp" "no-builtin-strcmp" "no-builtin-strncasecmp" "no-builtin-strncmp" "no-builtin-strstr" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #2 = { nounwind }
+attributes #3 = { optsize "no-builtin-bcmp" "no-builtin-memcmp" "no-builtin-strcasecmp" "no-builtin-strcmp" "no-builtin-strncasecmp" "no-builtin-strncmp" "no-builtin-strstr" }
+
+!llvm.dbg.cu = !{!7}
+!llvm.module.flags = !{!9, !10, !11, !12, !13, !14}
+!llvm.ident = !{!15}
+
+!0 = !DIGlobalVariableExpression(var: !1, expr: !DIExpression())
+!1 = distinct !DIGlobalVariable(scope: null, file: !2, line: 18, type: !3, isLocal: true, isDefinition: true)
+!2 = !DIFile(filename: "toys/other/clear.c", directory: "/home/andres/misc/framework/repos/toybox", checksumkind: CSK_MD5, checksum: "b9572101c88a68b38b68e3bf891bced3")
+!3 = !DICompositeType(tag: DW_TAG_array_type, baseType: !4, size: 64, elements: !5)
+!4 = !DIBasicType(name: "char", size: 8, encoding: DW_ATE_unsigned_char)
+!5 = !{!6}
+!6 = !DISubrange(count: 8)
+!7 = distinct !DICompileUnit(language: DW_LANG_C11, file: !2, producer: "Debian clang version 16.0.6 (15)", isOptimized: true, runtimeVersion: 0, emissionKind: FullDebug, globals: !8, splitDebugInlining: false, nameTableKind: None)
+!8 = !{!0}
+!9 = !{i32 7, !"Dwarf Version", i32 5}
+!10 = !{i32 2, !"Debug Info Version", i32 3}
+!11 = !{i32 1, !"wchar_size", i32 4}
+!12 = !{i32 8, !"PIC Level", i32 2}
+!13 = !{i32 1, !"ThinLTO", i32 0}
+!14 = !{i32 1, !"EnableSplitLTOUnit", i32 1}
+!15 = !{!"Deb9750acc63bian clang version 16.0.6 (15)"}
+!16 = distinct !DISubprogram(name: "clear_main", scope: !2, file: !2, line: 16, type: !17, scopeLine: 17, flags: DIFlagPrototyped | DIFlagAllCallsDescribed, spFlags: DISPFlagDefinition | DISPFlagOptimized, unit: !7, retainedNodes: !19)
+!17 = !DISubroutineType(types: !18)
+!18 = !{null}
+!19 = !{}
+!20 = !DILocation(line: 18, column: 3, scope: !16)
+!21 = !DILocation(line: 19, column: 1, scope: !16)
+!22 = !DISubprogram(name: "printf", scope: !23, file: !23, line: 356, type: !24, flags: DIFlagPrototyped, spFlags: DISPFlagOptimized, retainedNodes: !19)
+!23 = !DIFile(filename: "/usr/include/stdio.h", directory: "", checksumkind: CSK_MD5, checksum: "7d7db73c9e84df2166acd5df3e106f04")
+!24 = !DISubroutineType(types: !25)
+!25 = !{!26, !27, null}
+!26 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+!27 = !DIDerivedType(tag: DW_TAG_restrict_type, baseType: !28)
+!28 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !29, size: 64)
+!29 = !DIDerivedType(tag: DW_TAG_const_type, baseType: !4)
+
+^0 = module: (path: "my-inputs/clear.o", hash: (0, 0, 0, 0, 0))
+^1 = gv: (name: "__asan_version_mismatch_check_v8") ; guid = 551064990749115473
+^2 = gv: (name: "___asan_gen_.1", summaries: (variable: (module: ^0, flags: (linkage: private, visibility: default, notEligibleToImport: 1, live: 0, dsoLocal: 1, canAutoHide: 0), varFlags: (readonly: 1, writeonly: 0, constant: 1)))) ; guid = 1257042776783120261
+^3 = gv: (name: "llvm.global_ctors", summaries: (variable: (module: ^0, flags: (linkage: appending, visibility: default, notEligibleToImport: 1, live: 1, dsoLocal: 0, canAutoHide: 0), varFlags: (readonly: 0, writeonly: 0, constant: 0), refs: (^14)))) ; guid = 2412314959268824392
+^4 = gv: (name: "___asan_gen_", summaries: (variable: (module: ^0, flags: (linkage: private, visibility: default, notEligibleToImport: 1, live: 0, dsoLocal: 1, canAutoHide: 0), varFlags: (readonly: 1, writeonly: 0, constant: 1)))) ; guid = 5662622110553015107
+^5 = gv: (name: "llvm.global_dtors", summaries: (variable: (module: ^0, flags: (linkage: appending, visibility: default, notEligibleToImport: 1, live: 1, dsoLocal: 0, canAutoHide: 0), varFlags: (readonly: 0, writeonly: 0, constant: 0), refs: (^12)))) ; guid = 6738767867034848191
+^6 = gv: (name: "__asan_register_globals") ; guid = 6808239105346190646
+^7 = gv: (name: "printf") ; guid = 7383291119112528047
+^8 = gv: (name: "Mlvm.compiler.used", summaries: (variable: (module: ^0, flags: (linkage: appending, visibility: default, notEligibleToImport: 1, live: 1, dsoLocal: 0, canAutoHide: 0), varFlags: (readonly: 0, writeonly: 0, constant: 0), refs: (^11)))) ; guid = 9610627770985738006
+^9 = gv: (name: "anon.e96577adb9750acc63cdc3740fae95c9.1", summaries: (alias: (module: ^0, flags: (linkage: private, visibility: default, notEligibleToImport: 1, live: 0, dsoLocal: 1, canAutoHide: 0), aliasee: ^11))) ; guid = 10248800377137361423
+^10 = gv: (name: "clear_main", summaries: (function: (module: ^0, flags: (linkage: external, visibility: default, notEligibleToImport: 1, live: 0, dsoLocal: 0, canAutoHide: 0), insts: 2, funcFlags: (readNone: 0, readOnly: 0, noRecurse: 0, returnDoesNotAlias: 0, noInline: 0, alwaysInline: 0, noUnwind: 1, mayThrow: 0, hasUnknownCall: 0, mustBeUnreachable: 0), calls: ((callee: ^7)), refs: (^11)))) ; guid = 10827760425253494212
+^11 = gv: (name: ".str", summaries: (variable: (module: ^0, flags: (linkage: internal, visibility: default, notEligibleToImport: 1, live: 0, dsoLocal: 1, canAutoHide: 0), varFlags: (readonly: 1, writeonly: 0, constant: 1)))) ; guid = 11845246024791083439
+^12 = gv: (name: "asan.module_dtor", summaries: (function: (module: ^0, flags: (linkage: internal, visibility: default, notEligibleToImport: 1, live: 0, dsoLocal: 1, canAutoHide: 0), insts: 2, funcFlags: (readNone: 0, readOnly: 0, noRecurse: 0, returnDoesNotAlias: 0, noInline: 0, alwaysInline: 0, noUnwind: 1, mayThrow: 0, hasUnknownCall: 0, mustBeUnreachable: 0), calls: ((callee: ^16)), refs: (^15)))) ; guid = 13032141911570861525
+^13 = gv: (name: "__asan_init") ; guid = 13243234724835297868
+^14 = gv: (name: "asan.module_ctor", summaries: (function: (module: ^0, flags: (linkage: internal, visibility: default, notEligibleToImport: 1, live: 0, dsoLocal: 1, canAutoHide: 0), insts: 4, funcFlags: (readNone: 0, readOnly: 0, noRecurse: 0, returnDoesNotAlias: 0, noInline: 0, alwaysInline: 0, noUnwind: 1, mayThrow: 0, hasUnknownCall: 0, mustBeUnreachable: 0), calls: ((callee: ^13), (callee: ^1), (callee: ^6)), refs: (^15)))) ; guid = 14716620613192659773
+^15 = gv: (name: "anon.e96577adb9750acc63cdc3740fae95c9.0", summaries: (variable: (module: ^0, flags: (linkage: internal, visibility: default, notEligibleToImport: 1, live: 0, dsoLocal: 1, canAutoHide: 0), varFlags: (readonly: 1, writeonly: 1, constant: 0), refs: (^4, ^2, ^9)))) ; guid = 14837281708238473131
+^16 = gv: (name: "__asan_unregister_globals") ; guid = 15155849488438514834
+^17 = gv: (name: "llvm.used", summaries: (variable: (module: ^0, flags: (linkage: appending, visibility: default, notEligibleToImport: 1, live: 1, dsoLocal: 0, canAutoHide: 0), varFlags: (readonly: 0, writeonly: 0, constant: 0), refs: (^14, ^12)))) ; guid = 15665353970260777610
+^18 = flags: 8
+^19 = blockcount: 3
