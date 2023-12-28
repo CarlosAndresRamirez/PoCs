@@ -1,0 +1,171 @@
+Thank you for your consideration.
+We realize we focused on the questions from the forms, but experimental design details were left out (the idea was to have them in the final paper in more detail).
+
+I'll give here a brief summary of the experimental design.
+I will split this into three sections:
+
+1) Dataset description
+   a) Dataset selection (reasoning and sources)
+   b) Dataset (list with URL)
+
+2) Study Design
+  a) Prediction Model
+  b) Performance Metrics (1, 2, 3)
+
+3) Summary of contributions to the state of the art
+
+=====
+= 1 Dataset description
+=====
+
+==
+= a) Dataset selection and reasoning
+==
+Dataset: Twenty one large Open-Source Software projects.
+We wanted to focus on large critical systems where we could find actual vulnerabilities. (And we did find, as documented before)
+
+Dataset selection: High criticality score ( > 0.75 ) projects from the Open Source Project Criticality Score.
+  This project is an initiative from the Open Source Security Foundation (https://openssf.org).
+  Open Source Project Criticality Score URL: https://github.com/ossf/criticality_score 
+
+==
+= b) Dataset list & URL
+==
+
+List of OSS used in our experiments:
+
+Linux Kernel: 
+  https://github.com/torvalds/linux
+
+OpenSSL:
+  https://github.com/openssl/openssl
+
+Espressif IoT Development Framework (esp-idf):
+  https://github.com/espressif/esp-idf
+
+The PHP Interpreter (php-src):
+  https://github.com/php/php-src
+
+QEMU:
+  https://github.com/qemu/qemu
+
+OpenZFS advanced file system and volume manager (zfs):
+  https://github.com/openzfs/zfs
+
+System and Service Manager (Systemd):
+  https://github.com/systemd/systemd
+
+Emscripten WebAssembly Compiler (emscripten):
+  https://github.com/emscripten-core/emscripten
+
+Scalable real-time operating system RTOS (zephyr):
+  https://github.com/zephyrproject-rtos/zephyr
+
+OP-TEE Trusted OS (optee_os):
+  https://github.com/OP-TEE/optee_os
+
+FreeRDP: A Remote Desktop Protocol Implementation:
+  https://github.com/FreeRDP/FreeRDP
+
+The LLVM Compiler Infrastructure (project):
+  https://github.com/llvm/llvm-project
+
+RetroArch frontend for the libretro API (RetroArch):
+  https://github.com/libretro/RetroArch
+
+OBS Studio Video capturing, compositing, encoding, recording, and streaming:
+  https://github.com/obsproject/obs-studio
+
+OpenWrt Linux operating system targeting embedded devices (openwrt):
+  https://github.com/openwrt/openwrt
+
+GnuCash accounting application (gnucash):
+  https://github.com/Gnucash/gnucash
+
+Curl, tool for transferring data specified with URL syntax (curl):
+  https://github.com/curl/curl
+
+Redis data structures server (redis):
+  https://github.com/redis/redis
+
+Raspberrypi Linux:
+  https://github.com/raspberrypi/linux
+
+Git - fast, scalable, distributed revision control system (git):
+  https://github.com/git/git
+
+libuv is a multi-platform support library with a focus on asynchronous I/O:
+  https://github.com/libuv/libuv
+
+=====
+= 2 Study Design
+=====
+
+==
+= a) Prediction Model
+==
+
+Prediction Model:
+  - Random Forest (RF) algorithm.
+  - The default setting, 100 decision trees
+  - Train and Validation: Ten-fold cross validation technique
+  - Cross-validation estimates how accurately a predictive model performs in practice by dividing the original data into a training set and a test set.
+
+  The experiment leverages RF using as input both, the traditional code metrics
+  and human error metrics. It is trained on methods that are known to contain
+  bugs. After training, the trained model is used blindly to see how
+  accurate it is at telling which methods have bugs. Accuracy (Area Under Curve) is the
+  percentage of true positive findings by the model.
+
+==
+= b) Performance Metrics
+==
+
+Performance metric 1: Area Under ROC Curve (AUC)
+(What percentage of method can the model accurately predict)
+
+  Results:
+    11% Overall improvement (Human error metrics VS State of the art code metrics)
+    This 11% is the increase seen on average, on the 21 datasets. (see URL).
+  
+  I have uploaded the CSV text file with the exact figures for each OSS dataset.
+  Detailed results URL: https://github.com/CarlosAndresRamirez/PoCs/blob/main/BlackHat_Results/Results%20-%20Performance%20-%20%20Area%20Under%20the%20Curve%20AUC.csv
+  
+Performance metric 2: SHAP Values
+  Detailed results URL: https://github.com/CarlosAndresRamirez/PoCs/blob/main/BlackHat_Results/Results%20-%20SHAP%20Values.csv
+
+Performance metric 3: Overall Metric Ranking
+  Detailed results URL: https://github.com/CarlosAndresRamirez/PoCs/blob/main/BlackHat_Results/Results%20-%20Metric%20Rankings%20per%20dataset.csv
+  
+  The Human error take the three best places.
+    author_exp_score2 = Best (Author Experience with the code/project)
+    author_commit_time_score2 = Second Best (circadian rhythms, sleep-wake cycles, and natural fluctuations in alertness)
+    author_commit_date_score2 = Third Best ("learning decay" phenomenon)
+
+=====
+= 2 Summary of contributions to the state of the art
+=====
+
+- This research provides empirical evidence
+of the feasibility of effectively leveraging
+human factors theory in SDP models at method 
+level. This is first time to the best of our
+knowledge.
+
+- Improvement of 11% in prediction accuracy
+ is a remarkable achievement. Better bug
+ detection in less time, less resources
+ and less metrics (save time developing
+ prediction models).
+
+- In addition, the results indicate actual 
+  factors that are influencing human
+  developers negatively.
+  
+  For example, for a given project, the metric
+  author_commit_date_score2 indicates how much
+  influence the Memory Decay phenomenon is
+  having on developers (they take long time
+  to come back to edit a given method and are
+  forgetting details, perhaps requirements or
+  other important information).
