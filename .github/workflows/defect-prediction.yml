@@ -1,0 +1,171 @@
+name: Software Defect Prediction
+
+on:
+  # Schedule intentionally omitted for initial testing — enable it in Step 8.
+  workflow_dispatch:
+    inputs:
+      start_date:
+        description: 'Start (ISO-8601 UTC, e.g. 2026-10-01T00:00:00Z)'
+        required: false
+      end_date:
+        description: 'End (ISO-8601 UTC)'
+        required: false
+
+permissions:
+  contents: read
+  security-events: write   # Required for SARIF upload
+
+concurrency:
+  group: sdp-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TOOL_REPO: CarlosAndresRamirez/PoCs
+  SDP_VERSION: v0.1.1
+  CSV_PATH: ${{ github.workspace }}/sdp-report.csv
+  SARIF_PATH: ${{ github.workspace }}/sdp.sarif
+
+jobs:
+  predict:
+    name: Predict defects and deliver report
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout main (full history)
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          # Required: the tool walks commit history between the two dates.
+          fetch-depth: 0
+
+      - name: Resolve analysis window
+        id: window
+        run: |
+          set -euo pipefail
+
+          END_DATE="${{ inputs.end_date }}"
+          START_DATE="${{ inputs.start_date }}"
+          [[ -n "$END_DATE"   ]] || END_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          [[ -n "$START_DATE" ]] || START_DATE="$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)"
+
+          echo "start_date=$START_DATE" >> "$GITHUB_OUTPUT"
+          echo "end_date=$END_DATE"     >> "$GITHUB_OUTPUT"
+          echo "::notice title=Analysis window::$START_DATE -> $END_DATE"
+
+      - name: Download defect-prediction binary
+        run: |
+          set -euo pipefail
+          # Public release asset: plain curl, no auth, no CLI version dependency.
+          curl -fsSL --retry 3 --retry-delay 3 \
+            -o "$RUNNER_TEMP/sdp" \
+            "https://github.com/${TOOL_REPO}/releases/download/${SDP_VERSION}/sdp-linux-amd64.sh"
+          chmod +x "$RUNNER_TEMP/sdp"
+
+      - name: Verify binary checksum
+        run: |
+          set -euo pipefail
+          echo "${{ vars.SDP_BINARY_SHA256 }}  $RUNNER_TEMP/sdp" | sha256sum -c -
+
+      - name: Run defect prediction
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/sdp" \
+            --repo "${{ github.workspace }}" \
+            --start-date "${{ steps.window.outputs.start_date }}" \
+            --end-date   "${{ steps.window.outputs.end_date }}" \
+            --output     "$CSV_PATH"
+
+      - name: Validate report
+        id: validate
+        run: |
+          set -euo pipefail
+
+          if [[ ! -s "$CSV_PATH" ]]; then
+            echo "::error title=Missing report::Tool produced no CSV at $CSV_PATH"
+            exit 1
+          fi
+
+          echo "--- CSV preview (first 10 lines) ---"
+          head -n 10 "$CSV_PATH"
+          echo "------------------------------------"
+
+          ROWS=$(($(wc -l < "$CSV_PATH") - 1))
+          echo "rows=$ROWS" >> "$GITHUB_OUTPUT"
+
+          if (( ROWS <= 0 )); then
+            echo "::notice title=Empty window::No commits in range; skipping delivery."
+            echo "has_data=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "has_data=true" >> "$GITHUB_OUTPUT"
+
+          DEFECTS=$(awk -F',' 'NR>1 && $3 ~ /1/ {c++} END {print c+0}' "$CSV_PATH")
+          {
+            echo "### Defect Prediction Summary"
+            echo "| Metric | Value |"
+            echo "|---|---|"
+            echo "| Window start | ${{ steps.window.outputs.start_date }} |"
+            echo "| Window end | ${{ steps.window.outputs.end_date }} |"
+            echo "| Functions analysed | $ROWS |"
+            echo "| Predicted defective | $DEFECTS |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deliver report to backend
+        if: steps.validate.outputs.has_data == 'true'
+        env:
+          SDP_API_URL: ${{ secrets.SDP_API_URL }}
+          SDP_API_TOKEN: ${{ secrets.SDP_API_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          HTTP_CODE=$(curl --silent --show-error \
+            --retry 3 --retry-delay 5 --retry-all-errors \
+            --max-time 120 \
+            --write-out '%{http_code}' --output /tmp/api-response.txt \
+            --request POST "$SDP_API_URL" \
+            --header "Authorization: Bearer $SDP_API_TOKEN" \
+            --form "report=@${CSV_PATH};type=text/csv" \
+            --form "repository=${{ github.repository }}" \
+            --form "commit_sha=${{ github.sha }}" \
+            --form "start_date=${{ steps.window.outputs.start_date }}" \
+            --form "end_date=${{ steps.window.outputs.end_date }}")
+
+          echo "Backend responded HTTP $HTTP_CODE"
+          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
+            echo "::error title=Delivery failed::Backend returned HTTP $HTTP_CODE"
+            cat /tmp/api-response.txt || true
+            exit 1
+          fi
+
+      - name: Convert CSV to SARIF
+        if: steps.validate.outputs.has_data == 'true'
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/csv_to_sarif.py "$CSV_PATH" "$SARIF_PATH"
+
+          echo "--- SARIF result count ---"
+          python3 -c "import json,sys; \
+            print(len(json.load(open('$SARIF_PATH'))['runs'][0]['results']))"
+
+      - name: Upload SARIF to Code Scanning
+        if: steps.validate.outputs.has_data == 'true'
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: ${{ env.SARIF_PATH }}
+          category: defect-prediction
+          checkout_path: ${{ github.workspace }}
+          # Fail loudly if GitHub rejects the SARIF, rather than failing silently.
+          wait-for-processing: true
+
+      - name: Archive report and SARIF
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdp-report-${{ github.run_id }}
+          path: |
+            ${{ env.CSV_PATH }}
+            ${{ env.SARIF_PATH }}
+          retention-days: 14
+          if-no-files-found: warn
