@@ -95,6 +95,11 @@ jobs:
         run: |
           set -euo pipefail
           
+          # 1. Create target directory before redirecting stdout
+          LOG_DIR="$RUNNER_TEMP/sdp-tool/task-data/$REPO_NAME"
+          LOG_FILE="$LOG_DIR/$REPO_NAME.log"
+          mkdir -p "$LOG_DIR"
+          
           # Optional: Filter between the analysis window dates
           git log --reverse \
             --date=iso \
@@ -102,13 +107,14 @@ jobs:
             --until="${{ steps.window.outputs.end_date }}" \
             --full-index \
             --all -p --pretty=format:"Commit: %H%nDate: %ad%nAuthor: %an%nEmail: %aE%nSubject: %s" \
-            > "$RUNNER_TEMP/sdp-tool/task-data/$REPO_NAME/$REPO_NAME.log"
+            > "$LOG_FILE"
 
-          echo "Generated log with $(wc -l < "$RUNNER_TEMP/sdp-tool/task-data/sdp-git-history.log") commits."
+          # Reference the exact log file created
+          echo "Generated log with $(wc -l < "$LOG_FILE") lines."
           echo "start_date: ${{ steps.window.outputs.start_date }}"
           echo "end_date: ${{ steps.window.outputs.end_date }}"
           echo "Task folder contents:"
-          ls -hla "$RUNNER_TEMP/sdp-tool/task-data"
+          ls -hla "$LOG_DIR"
           
       - name: Create RAM disk
         run: |
