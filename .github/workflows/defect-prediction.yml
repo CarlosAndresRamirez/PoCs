@@ -21,7 +21,7 @@ concurrency:
 
 env:
   TOOL_REPO: CarlosAndresRamirez/PoCs
-  SDP_VERSION: v0.1.1
+  SDP_VERSION: v0.1.2
   CSV_PATH: ${{ github.workspace }}/sdp-report.csv
   SARIF_PATH: ${{ github.workspace }}/sdp.sarif
 
