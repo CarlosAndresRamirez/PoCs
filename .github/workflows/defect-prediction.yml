@@ -91,7 +91,7 @@ jobs:
       - name: Run defect prediction
         run: |
           set -euo pipefail
-          "$RUNNER_TEMP/sdp-tool/sdp-linux-amd64" \
+          "$RUNNER_TEMP/sdp-tool/bin/sdp-linux-amd64" \
             --repo "${{ github.workspace }}" \
             --start-date "${{ steps.window.outputs.start_date }}" \
             --end-date   "${{ steps.window.outputs.end_date }}" \
