@@ -100,7 +100,7 @@ jobs:
 
           # create task-data/
           TASK_PATH="$RAMDISK_PATH/task-data"
-          sudo mkdir -p "$TASK_PATH"
+          mkdir -p "$TASK_PATH"
 
       - name: Generate commit log
         run: |
