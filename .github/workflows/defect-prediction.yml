@@ -138,6 +138,9 @@ jobs:
           LOG_DIR="$TASK_PATH/$REPO_NAME"
           TRAIN_FILE="$LOG_DIR/$REPO_NAME.train.csv"
           
+          # Ensure required scripts have execute permissions
+          chmod +x "$RUNNER_TEMP/sdp-tool/scripts/git_show.sh"
+          
           "$RUNNER_TEMP/sdp-tool/bin/sdp-linux-amd64" \
             -g -n "${{ github.workspace }}" \
             --start-date "${{ steps.window.outputs.start_date }}" \
