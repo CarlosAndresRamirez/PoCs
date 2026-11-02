@@ -26,7 +26,6 @@ env:
   SARIF_PATH: ${{ github.workspace }}/sdp.sarif
   REPO_NAME: ${{ github.event.repository.name }}
   RAMDISK_PATH: /mnt/ramdisk
-  TASK_PATH: ${{ env.RAMDISK_PATH }}/task-data
 
 jobs:
   predict:
@@ -100,6 +99,7 @@ jobs:
           sudo chown runner:docker "$RAMDISK_PATH"
 
           # create task-data/
+          TASK_PATH="$RAMDISK_PATH/task-data"
           sudo mkdir -p "$TASK_PATH"
 
       - name: Generate commit log
@@ -107,6 +107,7 @@ jobs:
           set -euo pipefail
           
           # 1. Create target directory before redirecting stdout
+          TASK_PATH="$RAMDISK_PATH/task-data"
           LOG_DIR="$TASK_PATH/$REPO_NAME"
           LOG_FILE="$LOG_DIR/$REPO_NAME.log"
           mkdir -p "$LOG_DIR"
