@@ -26,7 +26,6 @@ env:
   SARIF_PATH: ${{ github.workspace }}/sdp.sarif
   REPO_NAME: ${{ github.event.repository.name }}
   TASK_PATH: ${{ github.workspace }}/sdp-tool/task-data
-  TRAIN_DISCOVERY_CSV: $TASK_PATH/$REPO_NAME/$REPO_NAME.train.discovery.csv
 
 jobs:
   predict:
@@ -130,17 +129,20 @@ jobs:
         run: |
           set -euo pipefail
           
+          LOG_DIR="$RUNNER_TEMP/sdp-tool/task-data/$REPO_NAME"
+          TRAIN_DISCOVERY_FILE="$LOG_DIR/$REPO_NAME.train.discovery.csv"
+          
           "$RUNNER_TEMP/sdp-tool/bin/sdp-linux-amd64" \
-            -g -n "$RUNNER_TEMP" \
+            -g -n "${{ github.workspace }}" \
             --start-date "${{ steps.window.outputs.start_date }}" \
             --end-date   "${{ steps.window.outputs.end_date }}" \
             -D -S -c -l train
 
           # Copy results
-          cp "$TASK_PATH/$REPO_NAME/$REPO_NAME.train.discovery.csv" "$CSV_PATH"
+          cp "$TRAIN_DISCOVERY_FILE" "$CSV_PATH"
           
-          echo "DBG Var:"
-          echo $TRAIN_DISCOVERY_CSV
+          echo "DBG train discovery:"
+          echo "$TRAIN_DISCOVERY_FILE"
           ls -hal "$CSV_PATH"
 
       - name: Validate report
