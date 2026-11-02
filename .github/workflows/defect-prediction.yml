@@ -63,7 +63,7 @@ jobs:
       - name: Verify release checksum
         run: |
           set -euo pipefail
-          echo "${{ vars.SDP_BINARY_SHA256 }}  $RUNNER_TEMP/sdp-linux-amd64.tar.gz" | sha256sum -c -
+          echo "${{ vars.SDP_RELEASE_SHA256 }}  $RUNNER_TEMP/sdp-linux-amd64.tar.gz" | sha256sum -c -
 
       - name: Unpack defect-prediction binary
         run: |
@@ -86,7 +86,7 @@ jobs:
       - name: Verify binary checksum
         run: |
           set -euo pipefail
-          echo "${{ vars.SDP_BINARY_SHA256 }}  $RUNNER_TEMP/sdp" | sha256sum -c -
+          echo "${{ vars.SDP_BINARY_SHA256 }}  $RUNNER_TEMP/sdp-linux-amd64" | sha256sum -c -
 
       - name: Run defect prediction
         run: |
