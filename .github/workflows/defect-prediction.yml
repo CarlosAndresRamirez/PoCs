@@ -134,6 +134,7 @@ jobs:
         run: |
           set -euo pipefail
           
+          TASK_PATH="$RAMDISK_PATH/task-data"
           LOG_DIR="$TASK_PATH/$REPO_NAME"
           TRAIN_FILE="$LOG_DIR/$REPO_NAME.train.csv"
           
