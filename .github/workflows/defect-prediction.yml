@@ -25,7 +25,8 @@ env:
   CSV_PATH: ${{ github.workspace }}/sdp-report.csv
   SARIF_PATH: ${{ github.workspace }}/sdp.sarif
   REPO_NAME: ${{ github.event.repository.name }}
-  TASK_PATH: ${{ github.workspace }}/sdp-tool/task-data
+  RAMDISK_PATH: /mnt/ramdisk
+  TASK_PATH: ${{ env.RAMDISK_PATH }}/task-data
 
 jobs:
   predict:
@@ -35,7 +36,7 @@ jobs:
 
     steps:
       - name: Checkout main (full history)
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: main
           # Required: the tool walks commit history between the two dates.
@@ -90,15 +91,26 @@ jobs:
           set -euo pipefail
           echo "${{ vars.SDP_BINARY_SHA256_0_1_3 }}  $RUNNER_TEMP/sdp-tool/bin/sdp-linux-amd64" | sha256sum -c -
 
+      - name: Create RAM disk
+        run: |
+          set -euo pipefail
+          
+          sudo mkdir -p "$RAMDISK_PATH"
+          sudo mount -t tmpfs -o size=512M tmpfs "$RAMDISK_PATH"
+          sudo chown runner:docker "$RAMDISK_PATH"
+
+          # create task-data/
+          sudo mkdir -p "$TASK_PATH"
+
       - name: Generate commit log
         run: |
           set -euo pipefail
           
           # 1. Create target directory before redirecting stdout
-          LOG_DIR="$RUNNER_TEMP/sdp-tool/task-data/$REPO_NAME"
+          LOG_DIR="$TASK_PATH/$REPO_NAME"
           LOG_FILE="$LOG_DIR/$REPO_NAME.log"
           mkdir -p "$LOG_DIR"
-          
+         
           # Optional: Filter between the analysis window dates
           git log --reverse \
             --date=iso \
@@ -114,14 +126,6 @@ jobs:
           echo "end_date: ${{ steps.window.outputs.end_date }}"
           echo "Task folder contents:"
           ls -hla "$LOG_DIR"
-          
-      - name: Create RAM disk
-        run: |
-          set -euo pipefail
-          
-          sudo mkdir -p /mnt/ramdisk
-          sudo mount -t tmpfs -o size=512M tmpfs /mnt/ramdisk
-          sudo chown runner:docker /mnt/ramdisk
 
       - name: Run defect prediction
         env:
@@ -129,8 +133,8 @@ jobs:
         run: |
           set -euo pipefail
           
-          LOG_DIR="$RUNNER_TEMP/sdp-tool/task-data/$REPO_NAME"
-          TRAIN_DISCOVERY_FILE="$LOG_DIR/$REPO_NAME.train.discovery.csv"
+          LOG_DIR="$TASK_PATH/$REPO_NAME"
+          TRAIN_FILE="$LOG_DIR/$REPO_NAME.train.csv"
           
           "$RUNNER_TEMP/sdp-tool/bin/sdp-linux-amd64" \
             -g -n "${{ github.workspace }}" \
@@ -139,10 +143,10 @@ jobs:
             -D -S -c -l train
 
           # Copy results
-          cp "$TRAIN_DISCOVERY_FILE" "$CSV_PATH"
+          cp "$TRAIN_FILE" "$CSV_PATH"
           
-          echo "DBG train discovery:"
-          echo "$TRAIN_DISCOVERY_FILE"
+          echo "DBG train file:"
+          echo "$TRAIN_FILE"
           ls -hal "$CSV_PATH"
 
       - name: Validate report
