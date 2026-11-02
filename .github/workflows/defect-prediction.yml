@@ -53,14 +53,24 @@ jobs:
           echo "end_date=$END_DATE"     >> "$GITHUB_OUTPUT"
           echo "::notice title=Analysis window::$START_DATE -> $END_DATE"
 
-      - name: Download defect-prediction binary
+      - name: Download defect-prediction release
         run: |
           set -euo pipefail
-          # Public release asset: plain curl, no auth, no CLI version dependency.
           curl -fsSL --retry 3 --retry-delay 3 \
-            -o "$RUNNER_TEMP/sdp" \
-            "https://github.com/${TOOL_REPO}/releases/download/${SDP_VERSION}/sdp-linux-amd64.sh"
-          chmod +x "$RUNNER_TEMP/sdp"
+            -o "$RUNNER_TEMP/sdp-linux-amd64.tar.gz" \
+            "https://github.com/${TOOL_REPO}/releases/download/${SDP_VERSION}/sdp-linux-amd64.tar.gz"
+
+      - name: Verify release checksum
+        run: |
+          set -euo pipefail
+          echo "${{ vars.SDP_BINARY_SHA256 }}  $RUNNER_TEMP/sdp-linux-amd64.tar.gz" | sha256sum -c -
+
+      - name: Unpack defect-prediction binary
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/sdp-tool"
+          tar -xzf "$RUNNER_TEMP/sdp-linux-amd64.tar.gz" -C "$RUNNER_TEMP/sdp-tool"
+          chmod +x "$RUNNER_TEMP/sdp-tool/sdp-linux-amd64"
 
       - name: Verify binary checksum
         run: |
@@ -70,7 +80,7 @@ jobs:
       - name: Run defect prediction
         run: |
           set -euo pipefail
-          "$RUNNER_TEMP/sdp" \
+          "$RUNNER_TEMP/sdp-tool/sdp-linux-amd64" \
             --repo "${{ github.workspace }}" \
             --start-date "${{ steps.window.outputs.start_date }}" \
             --end-date   "${{ steps.window.outputs.end_date }}" \
