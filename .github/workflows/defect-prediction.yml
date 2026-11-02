@@ -69,8 +69,19 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/sdp-tool"
-          tar -xzf "$RUNNER_TEMP/sdp-linux-amd64.tar.gz" -C "$RUNNER_TEMP/sdp-tool"
-          chmod +x "$RUNNER_TEMP/sdp-tool/sdp-linux-amd64"
+          
+          # Extract without timestamp warnings
+          tar --warning=no-timestamp -xzf "$RUNNER_TEMP/sdp-linux-amd64.tar.gz" -C "$RUNNER_TEMP/sdp-tool"
+
+          # Diagnostic: print unpacked layout to verify file names
+          echo "Unpacked contents:"
+          ls -la "$RUNNER_TEMP/sdp-tool"
+
+          # Ensure the launcher script and binary have execute permissions
+          chmod +x "$RUNNER_TEMP/sdp-tool/sdp-launcher.sh"
+          if [[ -f "$RUNNER_TEMP/sdp-tool/bin/sdp-linux-amd64" ]]; then
+            chmod +x "$RUNNER_TEMP/sdp-tool/bin/sdp-linux-amd64"
+          fi
 
       - name: Verify binary checksum
         run: |
